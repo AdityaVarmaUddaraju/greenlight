@@ -4,7 +4,6 @@ import (
 	"errors"
 	"expvar"
 	"fmt"
-	"net"
 	"net/http"
 	"strconv"
 	"strings"
@@ -14,13 +13,13 @@ import (
 	"github.com/AdityaVarmaUddaraju/greenlight/internal/data"
 	"github.com/AdityaVarmaUddaraju/greenlight/internal/validator"
 	"github.com/felixge/httpsnoop"
+	"github.com/tomasen/realip"
 	"golang.org/x/time/rate"
 )
 
-
 func (app *application) recoverPanic(next http.Handler) http.Handler {
-	return http.HandlerFunc(func (w http.ResponseWriter, r *http.Request)  {
-		defer func ()  {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer func() {
 			if err := recover(); err != nil {
 				w.Header().Set("Connection", "close")
 				app.serverErrorResponse(w, r, fmt.Errorf("%s", err))
@@ -35,15 +34,15 @@ func (app *application) ratelimit(next http.Handler) http.Handler {
 
 	type client struct {
 		ratelimiter *rate.Limiter
-		lastSeen time.Time
+		lastSeen    time.Time
 	}
 
 	var (
-		mu sync.Mutex
+		mu      sync.Mutex
 		clients = make(map[string]*client)
 	)
 
-	go func ()  {
+	go func() {
 		for {
 			time.Sleep(time.Minute)
 
@@ -57,36 +56,31 @@ func (app *application) ratelimit(next http.Handler) http.Handler {
 		}
 	}()
 
-	return http.HandlerFunc(func (w http.ResponseWriter, r *http.Request)  {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		if (app.config.limiter.enabled) {
-			ip, _, err := net.SplitHostPort(r.RemoteAddr)
+		if app.config.limiter.enabled {
+			ip := realip.FromRequest(r)
 
-			if err != nil {
-				app.serverErrorResponse(w, r, err)
-				return
-			}
-	
 			mu.Lock()
-	
+
 			if _, exists := clients[ip]; !exists {
 				clients[ip] = &client{
 					ratelimiter: rate.NewLimiter(rate.Limit(app.config.limiter.rps), app.config.limiter.burst),
 				}
 			}
-	
+
 			clients[ip].lastSeen = time.Now()
-	
+
 			if !clients[ip].ratelimiter.Allow() {
 				mu.Unlock()
 				app.ratelimitExceededResponse(w, r)
 				return
 			}
-	
+
 			mu.Unlock()
-	
+
 		}
-		
+
 		next.ServeHTTP(w, r)
 	})
 }
@@ -177,7 +171,7 @@ func (app *application) requirePermission(code string, next http.HandlerFunc) ht
 			return
 		}
 
-		next.ServeHTTP(w,r)
+		next.ServeHTTP(w, r)
 	}
 	return app.requireActivatedUser(fn)
 }
@@ -222,7 +216,7 @@ func (app *application) metrics(next http.Handler) http.Handler {
 		totalRequestsReceived.Add(1)
 
 		metrics := httpsnoop.CaptureMetrics(next, w, r)
-	
+
 		totalResponsesSent.Add(1)
 
 		totalProcessingTimeMicroseconds.Add(metrics.Duration.Microseconds())

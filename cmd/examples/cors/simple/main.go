@@ -22,7 +22,7 @@ document.getElementById("output").innerHTML = err; }
 </html>`
 
 func main() {
-	// Make the server address configurable at runtime via a command-line flag. 
+	// Make the server address configurable at runtime via a command-line flag.
 	addr := flag.String("addr", ":9000", "Server address")
 	flag.Parse()
 	log.Printf("starting server on %s", *addr)

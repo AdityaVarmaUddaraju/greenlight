@@ -168,19 +168,19 @@ func (m UserModel) Update(user *User) error {
 		user.Version,
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
 	err := m.DB.QueryRowContext(ctx, query, args...).Scan(&user.Version)
 
 	if err != nil {
 		switch {
-			case err.Error() == `pq: duplicate key value violates unique constraint "users_email_key"`:
-				return ErrDuplicateEmail
-			case errors.Is(err, sql.ErrNoRows):
-				return ErrEditConflict
-			default:
-				return err
+		case err.Error() == `pq: duplicate key value violates unique constraint "users_email_key"`:
+			return ErrDuplicateEmail
+		case errors.Is(err, sql.ErrNoRows):
+			return ErrEditConflict
+		default:
+			return err
 		}
 	}
 
@@ -203,7 +203,7 @@ func (m UserModel) GetForToken(tokenScope, tokenPlaintext string) (*User, error)
 
 	var user User
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 
 	defer cancel()
 

@@ -7,7 +7,6 @@ import (
 	"github.com/AdityaVarmaUddaraju/greenlight/internal/data"
 )
 
-
 type contextKey string
 
 const userContextKey = contextKey("user")

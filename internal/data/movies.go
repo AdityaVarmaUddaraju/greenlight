@@ -12,13 +12,13 @@ import (
 )
 
 type Movie struct {
-	ID 			int64		`json:"id"`
-	CreatedAt 	time.Time	`json:"-"`
-	Title 		string		`json:"title"`
-	Year 		int32		`json:"year,omitempty"`
-	Runtime 	Runtime		`json:"runtime,omitempty,string"`
-	Genres 		[]string	`json:"genres,omitempty"`
-	Version 	int32		`json:"version"`
+	ID        int64     `json:"id"`
+	CreatedAt time.Time `json:"-"`
+	Title     string    `json:"title"`
+	Year      int32     `json:"year,omitempty"`
+	Runtime   Runtime   `json:"runtime,omitempty,string"`
+	Genres    []string  `json:"genres,omitempty"`
+	Version   int32     `json:"version"`
 }
 
 type MovieModel struct {
@@ -50,8 +50,8 @@ func (m MovieModel) Insert(movie *Movie) error {
 		RETURNING id, created_at, version`
 
 	args := []interface{}{movie.Title, movie.Year, movie.Runtime, pq.Array(movie.Genres)}
-	
-	ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 
 	defer cancel()
 
@@ -70,7 +70,7 @@ func (m MovieModel) Get(id int64) (*Movie, error) {
 
 	var movie Movie
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 
 	defer cancel()
 
@@ -112,7 +112,7 @@ func (m MovieModel) Update(movie *Movie) error {
 		movie.Version,
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 
 	defer cancel()
 
@@ -138,7 +138,7 @@ func (m MovieModel) Delete(id int64) error {
 		DELETE FROM movies
 		WHERE id = $1`
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 
 	defer cancel()
 
@@ -170,7 +170,7 @@ func (m MovieModel) GetAll(title string, genres []string, filters Filters) ([]*M
 	ORDER BY %s %s, id ASC
 	LIMIT $3 OFFSET $4`, filters.sortColumn(), filters.sortDirection())
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 
 	defer cancel()
 
@@ -209,7 +209,7 @@ func (m MovieModel) GetAll(title string, genres []string, filters Filters) ([]*M
 	}
 
 	if err = rows.Err(); err != nil {
-		return nil, Metadata{} ,err
+		return nil, Metadata{}, err
 	}
 
 	metadata := calculateMetadata(totalRecords, filters.Page, filters.PageSize)

@@ -12,24 +12,24 @@ import (
 func (app *application) createMovieHandler(w http.ResponseWriter, r *http.Request) {
 
 	var input struct {
-		Title	string			`json:"title"`
-		Year	int32			`json:"year"`
-		Runtime data.Runtime	`json:"runtime"`
-		Genres	[]string		`json:"genres"`
+		Title   string       `json:"title"`
+		Year    int32        `json:"year"`
+		Runtime data.Runtime `json:"runtime"`
+		Genres  []string     `json:"genres"`
 	}
 
 	err := app.readJSON(w, r, &input)
 
 	if err != nil {
-		app.badRequestResponse(w, r, err) 
+		app.badRequestResponse(w, r, err)
 		return
 	}
 
 	movie := &data.Movie{
-		Title: input.Title,
-		Year: input.Year,
+		Title:   input.Title,
+		Year:    input.Year,
 		Runtime: input.Runtime,
-		Genres: input.Genres,
+		Genres:  input.Genres,
 	}
 
 	v := validator.New()
@@ -76,7 +76,7 @@ func (app *application) showMovieHandler(w http.ResponseWriter, r *http.Request)
 	}
 
 	err = app.writeJson(w, http.StatusOK, envelope{"movie": movie}, nil)
-	
+
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
@@ -95,7 +95,7 @@ func (app *application) updateMovieHandler(w http.ResponseWriter, r *http.Reques
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrRecordNotFound):
-			app.notFoundResponse(w,r)
+			app.notFoundResponse(w, r)
 		default:
 			app.serverErrorResponse(w, r, err)
 		}
@@ -103,10 +103,10 @@ func (app *application) updateMovieHandler(w http.ResponseWriter, r *http.Reques
 	}
 
 	var input struct {
-		Title *string `json:"title"`
-		Year *int32 `json:"year"`
+		Title   *string       `json:"title"`
+		Year    *int32        `json:"year"`
 		Runtime *data.Runtime `json:"runtime"`
-		Genres []string `json:"genres"`
+		Genres  []string      `json:"genres"`
 	}
 
 	err = app.readJSON(w, r, &input)
@@ -146,7 +146,7 @@ func (app *application) updateMovieHandler(w http.ResponseWriter, r *http.Reques
 			app.editConflictResponse(w, r)
 		default:
 			app.serverErrorResponse(w, r, err)
-		}		
+		}
 		return
 	}
 
@@ -185,7 +185,7 @@ func (app *application) deleteMovieHandler(w http.ResponseWriter, r *http.Reques
 func (app *application) listMovieHandler(w http.ResponseWriter, r *http.Request) {
 
 	var input struct {
-		Title string
+		Title  string
 		Genres []string
 		data.Filters
 	}
